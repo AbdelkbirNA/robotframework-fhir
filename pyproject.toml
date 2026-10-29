@@ -1,0 +1,19 @@
+[project]
+name = "robotframework-fhir"
+version = "0.1.0"
+description = "Robot Framework keyword library for testing FHIR R4 servers"
+requires-python = ">=3.9"
+dependencies = ["robotframework>=7.0", "requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["FhirLibrary"]
+
+[tool.pytest.ini_options]
+testpaths = ["unit"]

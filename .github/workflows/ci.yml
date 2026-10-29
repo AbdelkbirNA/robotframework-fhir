@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+      - name: Keyword documentation (libdoc)
+        run: |
+          mkdir -p site
+          libdoc FhirLibrary site/index.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keyword-docs
+          path: site/index.html
+
+  acceptance:
+    needs: unit
+    runs-on: ubuntu-latest
+    services:
+      fhir:
+        image: hapiproject/hapi:v7.6.0
+        ports:
+          - 8080:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - uses: actions/checkout@v4
+        with:
+          repository: AbdelkbirNA/qa-report-kit
+          path: qa-report-kit
+      - name: Wait for the FHIR server
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:8080/fhir/metadata && exit 0
+            sleep 5
+          done
+          exit 1
+      - name: Robot Framework acceptance suites
+        run: robot --outputdir results --variable FHIR_URL:http://localhost:8080/fhir tests
+      - name: Quality gate and traceability report
+        if: always()
+        run: |
+          PYTHONPATH=qa-report-kit python -m qa_report_kit results/output.xml --requirements requirements.csv \
+            --md results/quality.md --html results/quality.html --min-pass-rate 100 --strict-trace
+          cat results/quality.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: robot-results
+          path: results/
+
+  pages:
+    if: github.ref == 'refs/heads/main'
+    needs: acceptance
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: mkdir -p site && libdoc FhirLibrary site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

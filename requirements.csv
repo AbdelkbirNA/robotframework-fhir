@@ -1,0 +1,11 @@
+requirement,test
+REQ-PAT-01 A patient can be created and read back,tag:REQ-PAT-01
+REQ-PAT-02 A patient can be found by family name,tag:REQ-PAT-02
+REQ-PAT-03 A patient update creates a new version,tag:REQ-PAT-03
+REQ-PAT-04 A deleted patient can no longer be read,tag:REQ-PAT-04
+REQ-LAB-01 A normal lab result is within its reference range,tag:REQ-LAB-01
+REQ-LAB-02 An abnormal lab result is flagged,tag:REQ-LAB-02
+REQ-LAB-03 Lab results are searchable by patient and LOINC code,tag:REQ-LAB-03
+REQ-VAL-01 A conformant Patient passes $validate,tag:REQ-VAL-01
+REQ-VAL-02 A Patient with an invalid code is rejected,tag:REQ-VAL-02
+REQ-VAL-03 A lab Observation passes $validate,tag:REQ-VAL-03

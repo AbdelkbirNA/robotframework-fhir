@@ -1,0 +1,7 @@
+{
+  "resourceType": "Patient",
+  "identifier": [{"system": "urn:example:lab-patient", "value": "LAB-0001"}],
+  "name": [{"family": "Martin", "given": ["Claire"]}],
+  "gender": "female",
+  "birthDate": "1958-03-14"
+}
